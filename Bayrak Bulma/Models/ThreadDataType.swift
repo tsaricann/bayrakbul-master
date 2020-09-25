@@ -11,4 +11,5 @@ import Foundation
 struct ThreadDataType: Identifiable {
     var id: String
     var msg: String
+    //var number: Int
 }

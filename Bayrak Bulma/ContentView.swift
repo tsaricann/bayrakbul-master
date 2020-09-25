@@ -20,40 +20,46 @@ struct ContentView_Previews: PreviewProvider {
 
 
 struct ContentView: View {
-  @State private var uLkeler = ["Almanya", "Amerika", "Arjantin", "Avustralya", "Azerbaycan", "Belçika","Brezilya", "Çek Cumhuriyeti", "Çin", "Fransa", "Güney Kore", "İngiltere","İspanya", "İsveç", "İtalya", "Japonya", "Kanada", "Mısır","Romanya", "Türkiye", "Yunanistan"].shuffled()
-  @State private var cEvap = Int.random(in: 0...2)
+    @State private var bayrakIsimleri = ["Almanya", "Amerika", "Arjantin", "Avustralya", "Azerbaycan", "Belçika"].shuffled()
+    @State private var uLkeler = [ThreadDataType]()
+    @State private var cEvap = Int.random(in: 0...5)
   @State private var sKorGoster = false
   @State private var bAslik = ""
   @State private var mEsaj = ""
   @State private var sKor = 0
-@ObservedObject private var datas = firebaseData
+  @State private var ulkeAdi = "UlkeAdi"
+  @State private var deger = "Amerika"
+   
+    func getData()-> Void{
+        dbCollection.addSnapshotListener { (documentSnapshot, err) in
+                if err != nil {
+                    print((err?.localizedDescription)!)
+                    return
+                }else {
+                    print("read data success")
+                }
+                
+                documentSnapshot!.documentChanges.forEach { diff in
+                    // Real time create from server
+                    if (diff.type == .added) {
+                        let msgData = ThreadDataType(id: diff.document.documentID, msg: diff.document.get("adi") as! String)
+                        self.uLkeler.append(msgData)
+                    }
+                }
+            
+            self.ulkeAdi = self.uLkeler[self.cEvap].msg
+            }
+        }
+   
     
-    func getData() -> Void{
-        FirebaseData.init().readData()
-    }
-    
-  var body: some View {
+var body: some View {
     ZStack {
     
       LinearGradient(gradient: Gradient(colors: [.white, .gray]), startPoint: .top, endPoint: .bottom).edgesIgnoringSafeArea(.all)
 
       VStack(spacing: 40) {
         VStack {
-            
-         /*
-                   ForEach(datas.data){ data in
-                       HStack {
-                           Button(action: {
-                              
-                           }) {
-                               Text(data.msg)
-                           }
-                       }
-                   }
-            
-            */
-            
-          Text(uLkeler[cEvap])
+            Text(ulkeAdi)
             .foregroundColor(.red)
             .font(.headline)
             .fontWeight(.black)
@@ -63,9 +69,10 @@ struct ContentView: View {
           Button(action: {
             self.cEvapMesaj(numara)
           }) {
-            Bayrak(bAyrakIsim: self.uLkeler[numara])
+            Bayrak(bAyrakIsim: self.bayrakIsimleri[numara])
           }
         }
+       
 
         Spacer()
 
@@ -74,13 +81,13 @@ struct ContentView: View {
             .fontWeight(.regular)
           .foregroundColor(.white)
       }
-    }
-    .onAppear(perform: getData)
+        }
     .alert(isPresented: $sKorGoster) {
       Alert(title: Text(bAslik), message: Text(mEsaj), dismissButton: .default(Text("Devam Et")) {
         self.sOruSor()
         })
     }
+    .onAppear(perform: getData)
   }
 
   func cEvapMesaj(_ number: Int) {
@@ -90,18 +97,20 @@ struct ContentView: View {
       sKor += 1
     } else {
       bAslik = "Yanlış 👎🏻"
-      mEsaj = "Bu \(uLkeler[number]), Yanlış Cevap Verdiniz ve Bir Puanı Kaybettiniz"
+        mEsaj = "Yanlış Cevap Verdiniz ve Bir Puanı Kaybettiniz"
       if sKor > 0 {
         sKor -= 1
       }
     }
 
     sKorGoster = true
+    
   }
 
   func sOruSor() {
     uLkeler.shuffle()
-    cEvap = Int.random(in: 0...2)
+    cEvap = Int.random(in: 0...4)
+    getData()
   }
 }
 
@@ -114,7 +123,7 @@ struct Bayrak: View {
       .renderingMode(.original)
       .clipShape(Capsule())
       .overlay(Capsule()
-        .stroke(Color.white, lineWidth: 2))
+      .stroke(Color.white, lineWidth: 2))
       .shadow(color: .black, radius: 2)
-  }
+    }
 }

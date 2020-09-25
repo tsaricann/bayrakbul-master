@@ -36,11 +36,16 @@ class FirebaseData: ObservableObject {
                 if (diff.type == .added) {
                     let msgData = ThreadDataType(id: diff.document.documentID, msg: diff.document.get("adi") as! String)
                     self.data.append(msgData)
+                    
+                    
                 }
-                
                 print(self.data)
              
             }
+            
+            
+            
+            
         }
     }
     

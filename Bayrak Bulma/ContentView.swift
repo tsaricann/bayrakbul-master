@@ -7,6 +7,8 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 #if DEBUG
 struct ContentView_Previews: PreviewProvider {
@@ -17,8 +19,6 @@ struct ContentView_Previews: PreviewProvider {
 #endif
 
 
-
-
 struct ContentView: View {
   @State private var uLkeler = ["Almanya", "Amerika", "Arjantin", "Avustralya", "Azerbaycan", "Belçika","Brezilya", "Çek Cumhuriyeti", "Çin", "Fransa", "Güney Kore", "İngiltere","İspanya", "İsveç", "İtalya", "Japonya", "Kanada", "Mısır","Romanya", "Türkiye", "Yunanistan"].shuffled()
   @State private var cEvap = Int.random(in: 0...2)
@@ -26,13 +26,33 @@ struct ContentView: View {
   @State private var bAslik = ""
   @State private var mEsaj = ""
   @State private var sKor = 0
-
+@ObservedObject private var datas = firebaseData
+    
+    func getData() -> Void{
+        FirebaseData.init().readData()
+    }
+    
   var body: some View {
     ZStack {
+    
       LinearGradient(gradient: Gradient(colors: [.white, .gray]), startPoint: .top, endPoint: .bottom).edgesIgnoringSafeArea(.all)
 
       VStack(spacing: 40) {
         VStack {
+            
+         /*
+                   ForEach(datas.data){ data in
+                       HStack {
+                           Button(action: {
+                              
+                           }) {
+                               Text(data.msg)
+                           }
+                       }
+                   }
+            
+            */
+            
           Text(uLkeler[cEvap])
             .foregroundColor(.red)
             .font(.headline)
@@ -55,6 +75,7 @@ struct ContentView: View {
           .foregroundColor(.white)
       }
     }
+    .onAppear(perform: getData)
     .alert(isPresented: $sKorGoster) {
       Alert(title: Text(bAslik), message: Text(mEsaj), dismissButton: .default(Text("Devam Et")) {
         self.sOruSor()
